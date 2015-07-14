@@ -1,6 +1,7 @@
 .DS_Store
 .bash*
 .profile
+*.pyc
 
 dlxdd_config.json
 
