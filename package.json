@@ -1,0 +1,11 @@
+{
+	"name" : "dlxdd",
+	"version" : "0.0.1",
+	"dependencies" : {
+		"express" : "latest",
+		"body-parser" : "latest",
+		"child_process" : "latest"
+	},
+	"author" : "harlo",
+	"description" : "Deeplab x Deepdream Slackbot"
+}

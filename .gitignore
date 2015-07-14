@@ -1,0 +1,11 @@
+.DS_Store
+.bash*
+.profile
+
+dlxdd_config.json
+
+venv
+node_modules
+tmp
+.cache
+.npm
