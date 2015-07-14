@@ -1,5 +1,6 @@
 import os, json, logging, dropbox
 from utils import default_config_path
+from sys import argv, exit
 
 def init_dropbox(config, config_path=None):
 	if config_path is None:
@@ -94,3 +95,11 @@ def send_to_dropbox(dest_path, data, config_path=None):
 		logging.error("Could not upload to dropbox: [%s, %s]" % (type(e, e)))
 
 	return False
+
+if __name__ == "__main__":
+	res = False
+	
+	if len(argv) >= 5 and argv[1] == "send_to_dropbox":
+		res = send_to_dropbox(argv[3], argv[4])
+		
+	exit(res)

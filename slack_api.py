@@ -1,5 +1,6 @@
 import os, json, logging, requests
 from utils import default_config_path
+from sys import argv, exit
 
 def init_slack(config, config_path=None):
 	if config_path is None:
@@ -45,8 +46,13 @@ def request_file_for_user(user_id):
 		return None
 
 	try:
-		r = json.loads(requests.get('https://slack.com/api/files.list?token=%s&count=2&user=%s&types=images' % \
-			(api_token, user_id)).content)
+		r = requests.get('https://slack.com/api/files.list?token=%s&count=2&user=%s&types=images' % \
+			(api_token, user_id))
+
+		print r
+		print r.url
+
+		r = json.loads(r.content)
 
 		if not r['ok'] or 'files' not in r.keys():
 			logging.error("Not OK")
@@ -74,3 +80,14 @@ def put_file_in_dropbox(permalink):
 		logging.error("Could not pull file from Slack: [%s, %s]" % (type(e), e))
 
 	return False
+
+if __name__ == "__main__":
+	res = False
+	
+	if len(argv) >= 4:
+		if argv[1] == "request_file":
+			res = request_file_for_user(argv[3])
+		elif argv[1] == "send_file":
+			res = put_file_in_dropbox(argv[3])
+
+	exit(res)
