@@ -49,7 +49,7 @@ module.exports =  {
 
 			module.exports.fs().unlinkSync(src_path);
 			return {
-				text : response + " image " + doc_id + "!  Stand by..."
+				text : response + " image `" + doc_id + "`!  Stand by..."
 			};
 		}
 
@@ -68,7 +68,7 @@ module.exports =  {
 
 		if(send_to_dropbox) {
 			return {
-				text : "...starting Deepdream for " + user_name + "..."
+				text : "...starting Deepdream for <@" + user_id + ">..."
 			};			
 		} else {
 			console.error("could not send file to dropbox.");
@@ -77,12 +77,12 @@ module.exports =  {
 		return null;
 	},
 	giffify_deepdream : function(doc_id) {
-		return module.extras.generate_dlxdd_request(doc_id, 
+		return module.exports.generate_dlxdd_request(doc_id, 
 			{ task : "DeepDream.giffify_deepdream.giffify_deepdream" },
 			"Giffifying Deepdream for");
 	},
 	iterate_deepdream : function(doc_id) {
-		return module.extras.generate_dlxdd_request(doc_id, 
+		return module.exports.generate_dlxdd_request(doc_id, 
 			{ task : "DeepDream.iterate_deepdream.iterate_deepdream" },
 			"MOAR Deepdream on");
 	},

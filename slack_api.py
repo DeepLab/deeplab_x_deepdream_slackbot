@@ -47,7 +47,7 @@ def request_file_for_user(user_id):
 		return None
 
 	try:
-		sleep(15)
+		sleep(45)
 
 		r = requests.get('https://slack.com/api/files.list?token=%s&count=2&user=%s&types=images' % \
 			(api_token, user_id))
