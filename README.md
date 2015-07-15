@@ -20,6 +20,13 @@ Your config should look like this:
 }
 ```
 
+## Install
+
+```
+python install.py
+npm install
+```
+
 ## Run
 
 ```
