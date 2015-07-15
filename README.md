@@ -23,6 +23,9 @@ Your config should look like this:
 ## Install
 
 ```
+virtualenv venv
+source venv/bin/activate
+pip install -r requirements.txt
 python install.py
 npm install
 ```
