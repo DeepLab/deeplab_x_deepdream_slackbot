@@ -25,10 +25,37 @@ module.exports =  {
 	test_mod: function() {
 		//return module.exports.create_deepdream("user_id", "user_name");
 		//return module.exports.iterate_deepdream("abcdefg12345678");
+		//return module.exports.giffify_deepdream("abcdefg12345678");
 		return "OK!";
 	},
+	get_home : function() {
+		return process.env.HOME || process.env.USERPROFILE;
+	},
+	generate_dlxdd_request : function(doc_id, extras, response) {
+		// create dd_doc and put into dropbox
+		var dest_path = "dlxdd_iteration_request_" + Date.now() + ".json";
+		var src_path = [module.exports.get_home(), "dlxdd_tmp", dest_path].join("/");
+
+		dlxdd_request = { doc_id : doc_id };
+		for(var prop in extras) {
+			dlxdd_request[prop] = extras[prop];
+		}
+		
+		var jsonfile = module.exports.jsonfile();
+		jsonfile.writeFileSync(src_path, dlxdd_request);
+
+		var send_to_dropbox = module.exports.py(['dropbox_api.py', 'send_to_dropbox', dest_path, src_path]);
+		if(send_to_dropbox) {
+
+			module.exports.fs().unlinkSync(src_path);
+			return {
+				text : response + " image " + doc_id + "!  Stand by..."
+			};
+		}
+
+		return null;
+	},
 	create_deepdream : function(user_id, user_name) {
-		// scrape user's last image into dropbox
 		var asset_regex = /https:\/\/slack\-files\.com/i;
 		var request_file = module.exports.py(['slack_api.py', 'request_file', user_id]);
 
@@ -49,28 +76,15 @@ module.exports =  {
 
 		return null;
 	},
-	get_home : function() {
-		return process.env.HOME || process.env.USERPROFILE;
+	giffify_deepdream : function(doc_id) {
+		return module.extras.generate_dlxdd_request(doc_id, 
+			{ task : "DeepDream.giffify_deepdream.giffify_deepdream" },
+			"Giffifying Deepdream for");
 	},
 	iterate_deepdream : function(doc_id) {
-		// create dd_doc and put into dropbox
-		var dest_path = "dlxdd_iteration_request_" + Date.now() + ".json";
-		var src_path = [module.exports.get_home(), "dlxdd_tmp", dest_path].join("/");
-		
-		var jsonfile = module.exports.jsonfile();
-		jsonfile.writeFileSync(src_path, { doc_id : doc_id });
-
-		var send_to_dropbox = module.exports.py(['dropbox_api.py', 'send_to_dropbox', dest_path, src_path]);
-		if(send_to_dropbox) {
-			// delete tmp file
-			module.exports.fs().unlinkSync(src_path);
-
-			return {
-				text : "MOAR Deepdream on image " + doc_id + "!  Stand by..."
-			};
-		}
-
-		return null;
+		return module.extras.generate_dlxdd_request(doc_id, 
+			{ task : "DeepDream.iterate_deepdream.iterate_deepdream" },
+			"MOAR Deepdream on");
 	},
 	respond : function(req, res, next) {
 		var user_name = req.body.user_name;
@@ -82,26 +96,34 @@ module.exports =  {
 		console.log(req.body);
 
 		var dlxdd_payload = null;
-		var moar_regex = /moar\s[a-z0-9\-_]+/i;
+		var moar_regex = /moar\s[a-z0-9]+/i;
+		var giffify_regex = /gif\s[a-z0-9]+/i;
+
 		var PAYLOAD_DIRECTION = {
 			CREATE : 1,
-			ITERATE : 2
+			ITERATE : 2,
+			GIFFIFY : 3
 		};
 		
-		var get_payload = function(direction, extras) {
+		var build_payload = function(direction, extras) {
 			if(direction === PAYLOAD_DIRECTION.CREATE) {
 				console.log("no text in request body.  Let's scrape user " + extras + "'s last image...");
 				return module.exports.create_deepdream(extras, user_name);
 			} else if(direction === PAYLOAD_DIRECTION.ITERATE) {
 				console.log("moar-ing image " + extras);
 				return module.exports.iterate_deepdream(extras);
+			} else if(direction === PAYLOAD_DIRECTION.GIFFIFY) {
+				console.log("giffifying image " + extras);
+				return module.exports.giffify_deepdream(extras);
 			}
 		};
 
 		if(!req.body.text) {
-			dlxdd_payload = get_payload(PAYLOAD_DIRECTION.CREATE, req.body.user_id);
+			dlxdd_payload = build_payload(PAYLOAD_DIRECTION.CREATE, req.body.user_id);
 		} else if(req.body.text.match(moar_regex)) {
-			dlxdd_payload = get_payload(PAYLOAD_DIRECTION.ITERATE, req.body.text.split(" ")[1]);
+			dlxdd_payload = build_payload(PAYLOAD_DIRECTION.ITERATE, req.body.text.split(" ")[1]);
+		} else if(req.body.text.match(giffify_regex)) {
+			dlxdd_payload = build_payload(PAYLOAD_DIRECTION.GIFFIFY, req.body.text.split(" ")[1]);
 		}
 
 		if(dlxdd_payload) {
