@@ -5,6 +5,9 @@ module.exports =  {
 	jsonfile : function() {
 		return require('jsonfile');
 	},
+	fs : function() {
+		return require('fs');
+	},
 	py : function(cmd) {
 		cmd.unshift("python");
 
@@ -59,8 +62,11 @@ module.exports =  {
 
 		var send_to_dropbox = module.exports.py(['dropbox_api.py', 'send_to_dropbox', dest_path, src_path]);
 		if(send_to_dropbox) {
+			// delete tmp file
+			module.exports.fs().unlinkSync(src_path);
+
 			return {
-				text : "Request to iterate Deepdream on image " + doc_id + " placed.  Please wait..."
+				text : "MOAR Deepdream on image " + doc_id + "!  Stand by..."
 			};
 		}
 
