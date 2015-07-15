@@ -18,5 +18,5 @@ slack.post('/deepdream', dlxdd.respond);
 
 slack.listen(port, function() {
 	console.log("HEY WHAT IS UP ON NODE PORT " + port);
-	console.log(dlxdd);
+	//dlxdd.test_mod();
 });

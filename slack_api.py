@@ -1,6 +1,7 @@
 import os, json, logging, requests
 from utils import default_config_path
 from sys import argv, exit
+from time import sleep
 
 def init_slack(config, config_path=None):
 	if config_path is None:
@@ -46,6 +47,8 @@ def request_file_for_user(user_id):
 		return None
 
 	try:
+		sleep(15)
+
 		r = requests.get('https://slack.com/api/files.list?token=%s&count=2&user=%s&types=images' % \
 			(api_token, user_id))
 
@@ -58,6 +61,7 @@ def request_file_for_user(user_id):
 			logging.error("Not OK")
 			return None
 
+		print r['files']
 		return r['files'][0]['url_download']
 		
 	except Exception as e:

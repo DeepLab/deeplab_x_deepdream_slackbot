@@ -12,19 +12,24 @@ module.exports =  {
 		var res = exec(cmd.join(" "), true);
 
 		if(res.stderr) {
+			console.log(res.stderr.toString());
 			return res.stderr.toString();
 		}
 
+		console.error("No result to return");
 		return null;
 	},
 	test_mod: function() {
-		return module.exports.iterate_deepdream("abcdefg1234567");
+		//return module.exports.create_deepdream("user_id", "user_name");
+		//return module.exports.iterate_deepdream("abcdefg12345678");
+		return "OK!";
 	},
-	create_deepdream : function(user_id) {
+	create_deepdream : function(user_id, user_name) {
 		// scrape user's last image into dropbox
+		var asset_regex = /https:\/\/slack\-files\.com/i;
 		var request_file = module.exports.py(['slack_api.py', 'request_file', user_id]);
 
-		if(!request_file) {
+		if(!request_file || !request_file.match(asset_regex)) {
 			console.error("could not get any file.");
 			return null;
 		}
@@ -33,7 +38,7 @@ module.exports =  {
 
 		if(send_to_dropbox) {
 			return {
-				text : request_file + " sent to Deepdream server on " + user_name + "'s behalf."
+				text : "...starting Deepdream for " + user_name + "..."
 			};			
 		} else {
 			console.error("could not send file to dropbox.");
@@ -80,7 +85,7 @@ module.exports =  {
 		var get_payload = function(direction, extras) {
 			if(direction === PAYLOAD_DIRECTION.CREATE) {
 				console.log("no text in request body.  Let's scrape user " + extras + "'s last image...");
-				return module.exports.create_deepdream(extras);
+				return module.exports.create_deepdream(extras, user_name);
 			} else if(direction === PAYLOAD_DIRECTION.ITERATE) {
 				console.log("moar-ing image " + extras);
 				return module.exports.iterate_deepdream(extras);
