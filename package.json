@@ -4,7 +4,8 @@
 	"dependencies" : {
 		"express" : "latest",
 		"body-parser" : "latest",
-		"child_process" : "latest"
+		"exec-sync" : "latest",
+		"jsonfile" : "latest"
 	},
 	"author" : "harlo",
 	"description" : "Deeplab x Deepdream Slackbot"

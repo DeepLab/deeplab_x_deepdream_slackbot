@@ -2,7 +2,7 @@ This is what the slackbot does.
 
 ## Dependencies
 
-This will be installed for you if you run `./install.sh`.  Python dependencies are not "sudoed", meaning that you should run this in a virtual environment if necessary.  You should already have pip.
+You should already have Nodejs up and running.  It's also good to run this in a `virtualenv`.  Run `install.py` to setup your personal variables.  Finally, run `npm install`.
 
 ## Config
 
@@ -18,4 +18,11 @@ Your config should look like this:
 		"api_token" : "your slack api token"
 	}
 }
+```
+
+## Run
+
+```
+source venv/bin/activate
+node dlxdd_server.js
 ```

@@ -72,19 +72,29 @@ def setup_dlxdd_folder(config_path=None):
 			if res:
 				print "Created folder"
 				return True
+		else:
+			return True
 
 	except Exception as e:
 		logging.error("Could not init folder: [%s, %s]" % (type(e), e))
 
 	return False
 
-def send_to_dropbox(dest_path, data, config_path=None):
-	print type(data)
-	
+def send_to_dropbox(dest_path, src_path=None, raw_data=None, config_path=None):
+	if src_path is None and raw_data is not None:
+		data = raw_data
+	elif src_path is not None and raw_data is None:
+		try:
+			with open(src_path, 'rb') as D:
+				data = D.read()
+		except Exception as e:
+			logging.error("Could not get any data from %s" % src_path)
+			return False
+
 	try:
 		client = __get_client(config_path=config_path)
-
 		res = client.put_file(os.path.join(__get_folder(), dest_path), data)
+		
 		print res
 
 		if res:
@@ -99,7 +109,7 @@ def send_to_dropbox(dest_path, data, config_path=None):
 if __name__ == "__main__":
 	res = False
 	
-	if len(argv) >= 5 and argv[1] == "send_to_dropbox":
-		res = send_to_dropbox(argv[3], argv[4])
+	if len(argv) >= 4 and argv[1] == "send_to_dropbox":
+		res = send_to_dropbox(argv[2], src_path=argv[3])
 		
 	exit(res)

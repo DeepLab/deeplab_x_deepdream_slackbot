@@ -74,7 +74,7 @@ def put_file_in_dropbox(permalink):
 			return False
 
 		from dropbox_api import send_to_dropbox
-		return send_to_dropbox(permalink.split('/')[-1], r.content)
+		return send_to_dropbox(permalink.split('/')[-1], raw_data=r.content)
 
 	except Exception as e:
 		logging.error("Could not pull file from Slack: [%s, %s]" % (type(e), e))
@@ -83,11 +83,12 @@ def put_file_in_dropbox(permalink):
 
 if __name__ == "__main__":
 	res = False
+	print argv
 	
-	if len(argv) >= 4:
+	if len(argv) >= 3:
 		if argv[1] == "request_file":
-			res = request_file_for_user(argv[3])
+			res = request_file_for_user(argv[2])
 		elif argv[1] == "send_file":
-			res = put_file_in_dropbox(argv[3])
+			res = put_file_in_dropbox(argv[2])
 
 	exit(res)

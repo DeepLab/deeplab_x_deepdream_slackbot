@@ -27,16 +27,31 @@ def setup_slack():
 	from slack_api import init_slack
 	return init_slack(config)
 
+def make_dirs():
+	tmp_dir = os.path.join(os.path.expanduser('~'), "dlxdd_tmp")
+
+	try:
+		if not os.path.exists(tmp_dir):
+			os.mkdir(tmp_dir)
+
+		return True
+	except Exception as e:
+		logging.error("Could not make temp directory")
+
+	return False
+
 
 if __name__ == "__main__":
 	res = False
 
 	if len(argv) == 1:
-		res = install_dropbox() and setup_slack()
+		res = install_dropbox() and setup_slack() and make_dirs()
 	else:
 		if argv[1] == "dropbox":
 			res = install_dropbox()
 		if argv[1] == "slack":
 			res = setup_slack()
+		if argv[1] == "dirs":
+			res = make_dirs()
 
 	exit(0 if res else -1)
