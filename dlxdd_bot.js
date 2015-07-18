@@ -2,9 +2,6 @@ module.exports =  {
 	exec : function() {
 		return require('exec-sync');
 	},
-	jsonfile : function() {
-		return require('jsonfile');
-	},
 	fs : function() {
 		return require('fs');
 	},
@@ -14,6 +11,8 @@ module.exports =  {
 		var exec = module.exports.exec();
 		var res = exec(cmd.join(" "), true);
 
+		console.log(res.stderr);
+
 		if(res.stderr) {
 			console.log(res.stderr.toString());
 			return res.stderr.toString();
@@ -22,11 +21,56 @@ module.exports =  {
 		console.error("No result to return");
 		return null;
 	},
+	http : function() {
+		return require('http');
+	},
+	querystring : function() {
+		return require('querystring');
+	},
+	xmpp : function(obj) {
+		obj = module.exports.querystring().stringify(obj);
+
+		var opts = {
+			host : "localhost",
+			path : "/communicate",
+			port : process.env.SLACK_PORT || 8080,
+			method : 'POST',
+			headers : {
+				'Content-Type' : 'application/x-www-form-urlencoded',
+				'Content-Length' : obj.length
+			}
+		};
+
+		var callback = function(res) {
+			var str = '';
+			
+			res.on('data', function(chunk) {
+				str += chunk;
+			});
+
+			res.on('end', function() {
+				console.log(str);
+			});
+		};
+
+		var req = module.exports.http().request(opts, callback);
+		req.on('error', function(err) {
+			console.log("ERROR: " + err);
+		});
+
+		req.write(obj);
+		req.end();
+
+		return req;
+	},
 	test_mod: function() {
-		//return module.exports.create_deepdream("user_id", "user_name");
 		//return module.exports.iterate_deepdream("abcdefg12345678");
 		//return module.exports.giffify_deepdream("abcdefg12345678");
-		return "OK!";
+		//return module.exports.init_deepdream("https://slack-files.com/files-pub/T043P3V33-F07RL3K9T-93ad9997ec/download/1hdwaunxoaaaewie-vinz8uwuskwpqzmo.large.png");
+		
+		return module.exports.generate_dlxdd_request(null, 
+			{ is_test : true, message : "AYO TECHNOLOGY!" },
+			"AYO TECHNOLOGY");
 	},
 	get_home : function() {
 		return process.env.HOME || process.env.USERPROFILE;
@@ -36,20 +80,20 @@ module.exports =  {
 		var dest_path = "dlxdd_iteration_request_" + Date.now() + ".json";
 		var src_path = [module.exports.get_home(), "dlxdd_tmp", dest_path].join("/");
 
-		dlxdd_request = { doc_id : doc_id };
+		dlxdd_request = {};
 		for(var prop in extras) {
 			dlxdd_request[prop] = extras[prop];
 		}
-		
-		var jsonfile = module.exports.jsonfile();
-		jsonfile.writeFileSync(src_path, dlxdd_request);
 
-		var send_to_dropbox = module.exports.py(['dropbox_api.py', 'send_to_dropbox', dest_path, src_path]);
-		if(send_to_dropbox) {
+		if(doc_id) {
+			dlxdd_request.doc_id = doc_id;
+		}
 
-			module.exports.fs().unlinkSync(src_path);
+		var xmpp = module.exports.xmpp(dlxdd_request);
+
+		if(xmpp) {
 			return {
-				text : response + " image `" + doc_id + "`!  Stand by..."
+				text : response + " image `" + (doc_id ? doc_id : "(none)") + "`!  Stand by..."
 			};
 		}
 
@@ -66,7 +110,7 @@ module.exports =  {
 
 		var send_to_dropbox = module.exports.py(['slack_api.py', 'send_file', request_file]);
 
-		if(send_to_dropbox) {
+		if(send_to_dropbox && module.exports.init_deepdream(request_file)) {
 			return {
 				text : "...starting Deepdream for <@" + user_id + ">..."
 			};			
@@ -76,14 +120,25 @@ module.exports =  {
 
 		return null;
 	},
+	init_deepdream : function(request_file) {
+		var comp = request_file.split('/');
+		comp.reverse();
+
+		module.exports.generate_dlxdd_request(null, {
+			file_name : comp[0],
+			task_path : "Documents.evaluate_document.evaluateDocument"
+		}, "Initing Deepdream for file ");
+
+		return true;
+	},
 	giffify_deepdream : function(doc_id) {
 		return module.exports.generate_dlxdd_request(doc_id, 
-			{ task : "DeepDream.giffify_deepdream.giffify_deepdream" },
+			{ task_path : "DeepDream.giffify_deepdream.giffify_deepdream" },
 			"Giffifying Deepdream for");
 	},
 	iterate_deepdream : function(doc_id) {
 		return module.exports.generate_dlxdd_request(doc_id, 
-			{ task : "DeepDream.iterate_deepdream.iterate_deepdream" },
+			{ task_path : "DeepDream.iterate_deepdream.iterate_deepdream" },
 			"MOAR Deepdream on");
 	},
 	respond : function(req, res, next) {

@@ -5,7 +5,11 @@
 		"express" : "latest",
 		"body-parser" : "latest",
 		"exec-sync" : "latest",
-		"jsonfile" : "latest"
+		"node-xmpp-client" : "latest",
+		"node-xmpp-core" : "latest",
+		"node-expat" : "latest",
+		"ltx" : "latest",
+		"querystring" : "latest"
 	},
 	"author" : "harlo",
 	"description" : "Deeplab x Deepdream Slackbot"

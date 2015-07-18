@@ -1,4 +1,4 @@
-import os, json, logging, requests
+import os, json, logging, requests, re
 from utils import default_config_path
 from sys import argv, exit
 from time import sleep
@@ -61,8 +61,13 @@ def request_file_for_user(user_id):
 			logging.error("Not OK")
 			return None
 
-		print r['files']
-		return r['files'][0]['url_download']
+		no_rx = r'file|dream_\d+.+'
+		file_to_download = r['files'][0]['url_download']
+		if re.match(no_rx, file_to_download.split("/")[-1]):
+			#logging.error("Ignoring file %s, it is a dream already" % file_to_download)
+			return None
+
+		return file_to_download
 		
 	except Exception as e:
 		logging.error("Could not get any files for user: [%s, %s]" % (type(e), e))
