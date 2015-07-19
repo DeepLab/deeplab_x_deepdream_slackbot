@@ -64,6 +64,7 @@ module.exports =  {
 		return req;
 	},
 	test_mod: function() {
+		//return module.exports.create_deepdream("user_id", "user_name");
 		//return module.exports.iterate_deepdream("abcdefg12345678");
 		//return module.exports.giffify_deepdream("abcdefg12345678");
 		//return module.exports.init_deepdream("https://slack-files.com/files-pub/T043P3V33-F07RL3K9T-93ad9997ec/download/1hdwaunxoaaaewie-vinz8uwuskwpqzmo.large.png");
@@ -109,8 +110,10 @@ module.exports =  {
 		}
 
 		var send_to_dropbox = module.exports.py(['slack_api.py', 'send_file', request_file]);
+		var init_deepdream = module.exports.init_deepdream(request_file);
+		console.log(init_deepdream);
 
-		if(send_to_dropbox && module.exports.init_deepdream(request_file)) {
+		if(send_to_dropbox && init_deepdream) {
 			return {
 				text : "...starting Deepdream for <@" + user_id + ">..."
 			};			
@@ -151,8 +154,8 @@ module.exports =  {
 		console.log(req.body);
 
 		var dlxdd_payload = null;
-		var moar_regex = /moar\s[a-z0-9]+/i;
-		var giffify_regex = /gif\s[a-z0-9]+/i;
+		var moar_regex = /^moar\s[a-z0-9]{40}/i;
+		var giffify_regex = /^gif\s[a-z0-9]{40}/i;
 
 		var PAYLOAD_DIRECTION = {
 			CREATE : 1,
@@ -175,10 +178,15 @@ module.exports =  {
 
 		if(!req.body.text) {
 			dlxdd_payload = build_payload(PAYLOAD_DIRECTION.CREATE, req.body.user_id);
-		} else if(req.body.text.match(moar_regex)) {
-			dlxdd_payload = build_payload(PAYLOAD_DIRECTION.ITERATE, req.body.text.split(" ")[1]);
-		} else if(req.body.text.match(giffify_regex)) {
-			dlxdd_payload = build_payload(PAYLOAD_DIRECTION.GIFFIFY, req.body.text.split(" ")[1]);
+		} else {
+			var moar = req.body.text.match(moar_regex);
+			var gif = req.body.text.match(giffify_regex);
+
+			if(moar) {
+				dlxdd_payload = build_payload(PAYLOAD_DIRECTION.ITERATE, moar[0].split(" ")[1]);
+			} else if(gif) {
+				dlxdd_payload = build_payload(PAYLOAD_DIRECTION.GIFFIFY, gif[0].split(" ")[1]);
+			}
 		}
 
 		if(dlxdd_payload) {
