@@ -77,10 +77,6 @@ module.exports =  {
 		return process.env.HOME || process.env.USERPROFILE;
 	},
 	generate_dlxdd_request : function(doc_id, extras, response) {
-		// create dd_doc and put into dropbox
-		var dest_path = "dlxdd_iteration_request_" + Date.now() + ".json";
-		var src_path = [module.exports.get_home(), "dlxdd_tmp", dest_path].join("/");
-
 		dlxdd_request = {};
 		for(var prop in extras) {
 			dlxdd_request[prop] = extras[prop];
@@ -101,7 +97,7 @@ module.exports =  {
 		return null;
 	},
 	create_deepdream : function(user_id, user_name) {
-		var asset_regex = /https:\/\/slack\-files\.com/i;
+		var asset_regex = /^https:\/\/slack\-files\.com/i;
 		var request_file = module.exports.py(['slack_api.py', 'request_file', user_id]);
 
 		if(!request_file || !request_file.match(asset_regex)) {
@@ -128,7 +124,7 @@ module.exports =  {
 		comp.reverse();
 
 		module.exports.generate_dlxdd_request(null, {
-			file_name : comp[0],
+			file_name : comp[2] + "_" + comp[0],
 			task_path : "Documents.evaluate_document.evaluateDocument"
 		}, "Initing Deepdream for file ");
 
